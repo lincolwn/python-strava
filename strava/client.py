@@ -4,7 +4,7 @@ from strava.base import RequestHandler
 from strava.constant import APPROVAL_PROMPT, SCOPE
 
 
-class Client(RequestHandler):
+class ClientApiV3(RequestHandler):
     api_path = 'api/v3/'
 
     def __init__(self, access_token=None):
@@ -24,8 +24,8 @@ class Client(RequestHandler):
         :param mobile [bool]: Indicates if the user should be redirect to the mobile page or not.
         """
 
-        oauth_path = '/oauth/authorize/'
-        mobile_oauth_path = '/oauth/mobile/authorize/'
+        oauth_path = 'oauth/authorize/'
+        mobile_oauth_path = 'oauth/mobile/authorize/'
 
         approval_prompt = approval_prompt or APPROVAL_PROMPT.AUTO
         assert approval_prompt in APPROVAL_PROMPT, (
@@ -68,7 +68,7 @@ class Client(RequestHandler):
         :param code [str]: Temporary authorization code received by Strava.
         """
 
-        path = '/oauth/token/'
+        path = 'oauth/token/'
 
         params = {
             'client_id': client_id,
@@ -77,7 +77,7 @@ class Client(RequestHandler):
             'grant_type': 'authorization_code'
         }
 
-        data = self._dispatcher(path, 'post', params)
+        data = self._dispatcher('post', path, **params)
 
         self.access_token = data['access_token']
         return data
@@ -93,7 +93,7 @@ class Client(RequestHandler):
         :param refresh_token [str]: Refresh token received by Strava.
         """
 
-        path = '/oauth/token/'
+        path = 'oauth/token/'
 
         params = {
             'client_id': client_id,
@@ -102,7 +102,18 @@ class Client(RequestHandler):
             'refresh_token': refresh_token
         }
 
-        data = self._dispatcher(path, 'post', params)
+        data = self._dispatcher('post', path, **params)
 
         self.access_token = data['access_token']
         return data
+
+    def deauthorize(self):
+        """
+        Deauthorize the application.
+
+        See docs: https://developers.strava.com/docs/authentication/
+        """
+
+        path = 'oauth/deauthorize/'
+
+        self._dispatcher('post', path)

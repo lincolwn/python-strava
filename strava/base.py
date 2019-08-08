@@ -24,7 +24,7 @@ class RequestHandler:
     api_path: str = None
     access_token: str = None
 
-    def _build_url(self, path, is_webhook):
+    def _build_url(self, path, is_webhook=False):
         if not self.api_path:
             raise ImproperlyConfigured("Missing the 'api_path' setting for the Strava Client.")
 
@@ -39,7 +39,7 @@ class RequestHandler:
         url = urljoin(base_url, path.lstrip('/'))
         return url
 
-    def _dispatcher(self, path, method='get', params=None, files=None, body=None, is_webhook=False):
+    def _dispatcher(self, method, path, files=None, body=None, is_webhook=False, **params):
         """
         :param path [str]: URL path on the Strava API.
 
@@ -60,9 +60,10 @@ class RequestHandler:
             'is_webhook': is_webhook
         }
 
-        self.before_request(context)
+        self._before_request(context)
 
-        kwargs = {'params': {'access_token': self.get_access_token()}}
+        kwargs = {'headers': self._get_authorization_header()}
+        # just create arguments that exist.
         if params:
             kwargs['params'].update(params)
         if files:
@@ -71,7 +72,7 @@ class RequestHandler:
             kwargs['json'] = body
 
         response = requests.request(method.lower(), url, **kwargs)
-        self.after_request(response)
+        self._after_request(response)
 
         logger.info(
             "%s %s %d",
@@ -89,25 +90,68 @@ class RequestHandler:
             response_data = None
         return response_data
 
-    def get_access_token(self):
-        assert self.access_token, "You must provide an access token."
-        return self.access_token
+    def _get_authorization_header(self):
+        return {'authorization': 'Bearer {}'.format(self.get_access_token())}
 
-    def before_request(self, context):
+    def _before_request(self, context):
         """
         Hook called before the request to be made
 
         :param context [Dict[str, Any]]: the context of the request.
         """
-        pass
+        if hasattr(self, '_before_request_subscribers'):
+            for fn in self._before_request_subscribers:
+                fn(context)
 
-    def after_request(self, response):
+    def _after_request(self, response):
         """
         Hook called after the request to be made
 
         :param response requests.Response: the response object.
         """
-        pass
+        if hasattr(self, '_after_request_subscribers'):
+            for fn in self._before_request_subscribers:
+                fn(response)
+
+    def get_access_token(self):
+        assert self.access_token, "You must provide an access token."
+        return self.access_token
+
+    def before_request_hook(self, func):
+        """
+        Add a callable to be called before the request be made.
+
+        callable signature: (context) where context is a dict
+        containing the request data:
+            - http_method,
+            - url,
+            - params,
+            - body (request body),
+            - is_webhook
+
+        :param func [Callable]: callable to be called before make the request
+        """
+        assert callable(func), "'func' must be a callable"
+
+        if not hasattr(self, '_before_request_subscribers'):
+            self._before_request_subscribers = [func]
+        else:
+            self._before_request_subscribers.append(func)
+
+    def after_request_hook(self, func):
+        """
+        Add a callable to be called before the request be made.
+
+        callable signature: (respose) - The response object.
+
+        :param func [Callable]: callable to be called before make the request
+        """
+        assert callable(func), "'func' must be a callable"
+
+        if not hasattr(self, '_after_request_subscribers'):
+            self._after_request_subscribers = [func]
+        else:
+            self._after_request_subscribers.append(func)
 
     def handle_response(self, response):
         exc_class = None
