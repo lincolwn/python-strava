@@ -11,9 +11,7 @@ class BatchIterator:
             self.per_page = self.limit
         else:
             self.per_page = self.default_per_page
-
         self._finished = False
-        self._fetch_page()
 
     def _fetch_page(self):
         page_size = None

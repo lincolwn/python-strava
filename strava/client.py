@@ -33,7 +33,7 @@ class ClientApiV3(RequestHandler):
             "Valid values are: {}".format(APPROVAL_PROMPT.values())
         )
 
-        scope = scope or [SCOPE.READ, SCOPE.ACTIVITY_READ]
+        scope = scope or [SCOPE.READ, SCOPE.ACTIVITY_READ_ALL]
 
         invalid_scope = set(scope) - set(SCOPE.values())
 
