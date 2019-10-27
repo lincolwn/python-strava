@@ -1,7 +1,11 @@
+from functools import partial
 from urllib.parse import urlunsplit, urlencode
 
+import pytz
+import calendar
 from strava.base import RequestHandler
-from strava.constant import APPROVAL_PROMPT, SCOPE
+from strava.constants import APPROVAL_PROMPT, SCOPE
+from strava.helpers import BatchIterator
 
 
 class ClientApiV3(RequestHandler):
@@ -45,6 +49,7 @@ class ClientApiV3(RequestHandler):
         qs = {
             'client_id': client_id,
             'redirect_uri': redirect_uri,
+            'response_type': 'code',
             'approval_prompt': approval_prompt,
             'scope': ','.join(scope)
         }
@@ -107,7 +112,7 @@ class ClientApiV3(RequestHandler):
         self.access_token = data['access_token']
         return data
 
-    def deauthorize(self):
+    def deauthorize(self, access_token):
         """
         Deauthorize the application.
 
@@ -116,4 +121,46 @@ class ClientApiV3(RequestHandler):
 
         path = 'oauth/deauthorize/'
 
-        self._dispatcher('post', path)
+        self._dispatcher('post', path, access_token=access_token)
+
+    def _from_datetime_to_epoch(self, dtime):
+        utc_dtime = dtime.astimezone(pytz.utc)
+        return calendar.timegm(utc_dtime.timetuple())
+
+    def get_activities(self, before=None, after=None, per_page=100, limit=100):
+        """
+        Get the athele activities
+
+        See docs: http://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
+
+        :param before [datetime]: datetime to use for filtering activities that have taken place before a certain time
+        :param after [datetime]: datetime to use for filtering activities that have taken place after a certain time
+        :param per_page [int]: page size
+        :param limit [int]: max number of activities to fetch
+
+        Note: 'before' and 'after' will be considered in UTC.
+        """
+
+        path = 'athlete/activities/'
+
+        params = {}
+        if before:
+            params['before'] = self._from_datetime_to_epoch(before)
+        if after:
+            params['after'] - self._from_datetime_to_epoch(after)
+
+        fetcher = partial(self._dispatcher, 'get', path, **params)
+        return BatchIterator(fetcher, per_page=per_page, limit=limit)
+
+    def get_activity(self, activity_id, include_all_efforts=True):
+        """
+        Get an athlete activity by id
+
+        See docs: http://developers.strava.com/docs/reference/#api-Activities-getActivityById
+
+        :param activity_id [int]: activity's id
+        :param include_all_efforts [bool]: include segment efforts in the response
+        """
+
+        path = f'activities/{activity_id}/'
+        return self._dispatcher('get', path, include_all_efforts=include_all_efforts)

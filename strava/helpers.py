@@ -1,16 +1,14 @@
 class BatchIterator:
-    default_per_page = 100
 
-    def __init__(self, fetcher, limit=None):
+    def __init__(self, fetcher, per_page=100, limit=None):
         self.fetcher = fetcher
         self.page = 1
+        self.per_page = per_page
         self.limit = limit
         self.fetched_count = 0
 
-        if self.limit and self.limit < self.default_per_page:
+        if self.limit and self.limit < self.per_page:
             self.per_page = self.limit
-        else:
-            self.per_page = self.default_per_page
         self._finished = False
 
     def _fetch_page(self):
