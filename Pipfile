@@ -12,6 +12,7 @@ flake8 = "*"
 pylint = "*"
 tox = "*"
 ipython = "*"
+ipdb = "*"
 
 [packages]
 

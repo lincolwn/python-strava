@@ -62,10 +62,9 @@ class RequestHandler:
 
         self._before_request(context)
 
-        kwargs = {'headers': self._get_authorization_header()}
+        kwargs = {'headers': self._get_authorization_header(), 'params': params}
         # just create arguments that exist.
-        if params:
-            kwargs['params'].update(params)
+
         if files:
             kwargs['files'] = files
         if body:
