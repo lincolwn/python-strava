@@ -59,7 +59,6 @@ class ClientApiV3(RequestHandler):
             qs['state'] = state
 
         path = mobile_oauth_path if mobile else oauth_path
-
         return urlunsplit(('https', self.api_domain, path, urlencode(qs), ''))
 
     def exchange_token(self, client_id, client_secret, code):
@@ -83,7 +82,6 @@ class ClientApiV3(RequestHandler):
         }
 
         data = self._dispatcher('post', path, **params)
-
         self.access_token = data['access_token']
         return data
 
@@ -108,7 +106,6 @@ class ClientApiV3(RequestHandler):
         }
 
         data = self._dispatcher('post', path, **params)
-
         self.access_token = data['access_token']
         return data
 
@@ -120,7 +117,6 @@ class ClientApiV3(RequestHandler):
         """
 
         path = 'oauth/deauthorize/'
-
         self._dispatcher('post', path, access_token=access_token)
 
     def _from_datetime_to_epoch(self, dtime):
@@ -164,3 +160,47 @@ class ClientApiV3(RequestHandler):
 
         path = f'activities/{activity_id}/'
         return self._dispatcher('get', path, include_all_efforts=include_all_efforts)
+
+    def explore_segments(self, bounds, activity_type=None, min_cat=None, max_cat=None):
+        """
+        Returns the top 10 segments matching a specified query.
+
+        See docs: http://developers.strava.com/docs/reference/#api-Segments-exploreSegments
+
+        :param bounds [Sequence[float]]:  The latitude and longitude for two points describing a rectangular
+            boundary for the search: [southwest corner latitutde, southwest corner longitude, northeast corner
+            latitude, northeast corner longitude]. Bounds should be a sequence of points sequence:
+            Example: [[lat, long], [lat, long]]
+
+        :param activity_type [str]: Desired activity type. Can be 'running' or 'riding'.
+        :param min_cat [int]: the minimum climbing category.
+        :param max_cat [int]: the maximum climbing category.
+
+        """
+
+        path = 'segments/explore/'
+
+        assert len(bounds) == 2, "Invalid bounds. Must be '[[lat, long], [lat, long]]'"
+        _bounds = (bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1])
+        params = {'bounds': ','.join(_bounds)}
+        if activity_type:
+            assert activity_type in ('running', 'riding'), "Invalid 'activity_type'. Must be 'running' or 'riding'"
+            params['activity_type'] = activity_type
+        if min_cat:
+            params['min_cat'] = min_cat
+        if max_cat:
+            params['max_cat'] = max_cat
+
+        return self._dispatcher('get', path, **params)
+
+    def get_segment(self, segment_id):
+        """
+        Return the specified segment by id.
+
+        See docs: http://developers.strava.com/docs/reference/#api-Segments-getSegmentById
+
+        :param segment_id [int]: Segment id.
+        """
+
+        path = f'segments/{segment_id}/'
+        return self._dispatcher('get', path)
