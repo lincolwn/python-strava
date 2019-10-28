@@ -123,6 +123,16 @@ class ClientApiV3(RequestHandler):
         utc_dtime = dtime.astimezone(pytz.utc)
         return calendar.timegm(utc_dtime.timetuple())
 
+    def get_athlete_profile(self):
+        """
+        Return the profile of the authenticated user (access_token owner).
+
+        See docs: http://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthlete
+        """
+
+        path = 'athlete/'
+        return self._dispatcher('get', path)
+
     def get_activities(self, before=None, after=None, per_page=100, limit=100):
         """
         Get the athele activities
