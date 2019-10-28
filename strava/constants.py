@@ -17,6 +17,7 @@ APPROVAL_PROMPT = Enum(
     FORCE='force',
 )
 
+
 SCOPE = Enum(
     READ='read',
     READ_ALL='read_all',
