@@ -133,7 +133,7 @@ class ClientApiV3(RequestHandler):
         path = 'athlete/'
         return self._dispatcher('get', path)
 
-    def get_activities(self, before=None, after=None, per_page=100, limit=100):
+    def get_activities(self, before=None, after=None, per_page=50, limit=100):
         """
         Get the athele activities
 
@@ -142,7 +142,7 @@ class ClientApiV3(RequestHandler):
         :param before [datetime]: datetime to use for filtering activities that have taken place before a certain time
         :param after [datetime]: datetime to use for filtering activities that have taken place after a certain time
         :param per_page [int]: page size
-        :param limit [int]: max number of activities to fetch
+        :param limit [int]: maximum number of activities to fetch
 
         Note: 'before' and 'after' will be considered in UTC.
         """
@@ -213,4 +213,31 @@ class ClientApiV3(RequestHandler):
         """
 
         path = f'segments/{segment_id}/'
+        return self._dispatcher('get', path)
+
+    def get_segment_efforts(self, segment_id, per_page=50, limit=100):
+        """
+        Return all segment's efforts from activities of the authenticated user.
+
+        See docs: http://developers.strava.com/docs/reference/#api-SegmentEfforts-getEffortsBySegmentId
+
+        :param segment_id [int]: Segment id.
+        :param per_page [int]: page size.
+        :param limit [int]: maximum number of activities to fetch.
+        """
+
+        path = f'segments/{segment_id}/all_efforts/'
+        fetcher = partial(self._dispatcher, 'get', path)
+        return BatchIterator(fetcher, per_page=per_page, limit=limit)
+
+    def get_segment_effort(self, effort_id):
+        """
+        Returns a segment effort from an activity that is owned by the authenticated athlete.
+
+        See docs: http://developers.strava.com/docs/reference/#api-SegmentEfforts-getSegmentEffortById
+
+        :param effort_id [id]: segment effort id
+        """
+
+        path = f'segment_efforts/{effort_id}/'
         return self._dispatcher('get', path)
