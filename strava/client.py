@@ -1,20 +1,19 @@
 from functools import partial
 from urllib.parse import urlunsplit, urlencode
 
-import pytz
-import calendar
 from strava.base import RequestHandler
 from strava.constants import APPROVAL_PROMPT, SCOPE
-from strava.helpers import BatchIterator
+from strava.helpers import BatchIterator, from_datetime_to_epoch
 
 
-class ClientApiV3(RequestHandler):
+class StravaApiClientV3(RequestHandler):
     api_path = 'api/v3/'
 
     def __init__(self, access_token=None):
         self.access_token = access_token
 
-    def authorization_url(self, client_id, redirect_uri, approval_prompt=None, scope=None, state=None, mobile=False):
+    @classmethod
+    def authorization_url(cls, client_id, redirect_uri, approval_prompt=None, scope=None, state=None, mobile=False):
         """
         Returns the Strava authorization URL.
 
@@ -59,7 +58,7 @@ class ClientApiV3(RequestHandler):
             qs['state'] = state
 
         path = mobile_oauth_path if mobile else oauth_path
-        return urlunsplit(('https', self.api_domain, path, urlencode(qs), ''))
+        return urlunsplit(('https', cls.api_domain, path, urlencode(qs), ''))
 
     def exchange_token(self, client_id, client_secret, code):
         """
@@ -119,10 +118,6 @@ class ClientApiV3(RequestHandler):
         path = 'oauth/deauthorize/'
         self._dispatcher('post', path, access_token=access_token)
 
-    def _from_datetime_to_epoch(self, dtime):
-        utc_dtime = dtime.astimezone(pytz.utc)
-        return calendar.timegm(utc_dtime.timetuple())
-
     def get_athlete_profile(self):
         """
         Return the profile of the authenticated user (access_token owner).
@@ -133,7 +128,7 @@ class ClientApiV3(RequestHandler):
         path = 'athlete/'
         return self._dispatcher('get', path)
 
-    def get_activities(self, before=None, after=None, per_page=50, limit=100):
+    def get_activities(self, before=None, after=None, per_page=50, limit=None):
         """
         Get the athele activities
 
@@ -151,9 +146,9 @@ class ClientApiV3(RequestHandler):
 
         params = {}
         if before:
-            params['before'] = self._from_datetime_to_epoch(before)
+            params['before'] = from_datetime_to_epoch(before)
         if after:
-            params['after'] - self._from_datetime_to_epoch(after)
+            params['after'] - from_datetime_to_epoch(after)
 
         fetcher = partial(self._dispatcher, 'get', path, **params)
         return BatchIterator(fetcher, per_page=per_page, limit=limit)
@@ -215,7 +210,7 @@ class ClientApiV3(RequestHandler):
         path = f'segments/{segment_id}/'
         return self._dispatcher('get', path)
 
-    def get_segment_efforts(self, segment_id, per_page=50, limit=100):
+    def get_segment_efforts(self, segment_id, per_page=50, limit=None):
         """
         Return all segment's efforts from activities of the authenticated user.
 

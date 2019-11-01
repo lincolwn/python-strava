@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from strava.exception import (
+from strava.exceptions import (
     ImproperlyConfigured,
     StravaError,
     Unauthenticated,
