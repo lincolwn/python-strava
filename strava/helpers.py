@@ -1,3 +1,9 @@
+import calendar
+from datetime import datetime
+
+import pytz
+
+
 class BatchIterator:
 
     def __init__(self, fetcher, per_page=100, limit=None):
@@ -33,3 +39,12 @@ class BatchIterator:
     def __iter__(self):
         while not self._finished:
             yield from self._fetch_page()
+
+
+def from_epoch_to_datetime(timestamp, timezone=pytz.UTC):
+    return datetime.fromtimestamp(timestamp, tz=timezone)
+
+
+def from_datetime_to_epoch(dtime):
+    utc_dtime = dtime.astimezone(pytz.utc)
+    return calendar.timegm(utc_dtime.timetuple())
