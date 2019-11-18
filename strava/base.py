@@ -11,6 +11,7 @@ from strava.exceptions import (
     Unauthenticated,
     PermissionDenied,
     NotFound,
+    InvalidRequest,
 )
 
 
@@ -62,9 +63,11 @@ class RequestHandler:
 
         self._before_request(context)
 
-        kwargs = {'headers': self._get_authorization_header(), 'params': params}
+        kwargs = {'params': params}
         # just create arguments that exist.
 
+        if self._get_authorization_header():
+            kwargs['headers'] = self._get_authorization_header()
         if files:
             kwargs['files'] = files
         if body:
@@ -90,7 +93,8 @@ class RequestHandler:
         return response_data
 
     def _get_authorization_header(self):
-        return {'authorization': 'Bearer {}'.format(self.get_access_token())}
+        if getattr(self, 'access_token', None):
+            return {'authorization': 'Bearer {}'.format(self.access_token}
 
     def _before_request(self, context):
         """
@@ -111,10 +115,6 @@ class RequestHandler:
         if hasattr(self, '_after_request_subscribers'):
             for fn in self._before_request_subscribers:
                 fn(response)
-
-    def get_access_token(self):
-        assert self.access_token, "You must provide an access token."
-        return self.access_token
 
     def before_request_hook(self, func):
         """
@@ -154,6 +154,8 @@ class RequestHandler:
 
     def handle_response(self, response):
         exc_class = None
+        if response.status_code == HTTPStatus.BAD_REQUEST:
+            exc_class = InvalidRequest
         if response.status_code == HTTPStatus.UNAUTHORIZED:
             exc_class = Unauthenticated
         elif response.status_code == HTTPStatus.FORBIDDEN:

@@ -2,7 +2,7 @@ from functools import partial
 from urllib.parse import urlunsplit, urlencode
 
 from strava.base import RequestHandler
-from strava.constants import APPROVAL_PROMPT, SCOPE
+from strava.constants import APPROVAL_PROMPT, SCOPE, DEFAULT_VERIFY_TOKEN
 from strava.helpers import BatchIterator, from_datetime_to_epoch
 
 
@@ -59,6 +59,36 @@ class StravaApiClientV3(RequestHandler):
 
         path = mobile_oauth_path if mobile else oauth_path
         return urlunsplit(('https', cls.api_domain, path, urlencode(qs), ''))
+
+    def subscribe_webhook(self, client_id, client_secret, callback_url, verify_token=DEFAULT_VERIFY_TOKEN):
+        path = 'push_subscriptions/'
+
+        params = {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'callback_url': callback_url,
+            'verify_token': verify_token
+        }
+        return self._dispatcher('post', path, is_webhook=True, **params)
+
+    def validate_webhook_subscription(self, hub_mode, hub_challenge, verify_token=None):
+        assert hub_mode == 'subscribe', "Invalid 'hub_mode'."
+
+        if verify_token:
+            assert verify_token == DEFAULT_VERIFY_TOKEN, "Invalid 'verify token'."
+        return {"hub.challenge": hub_challenge}
+
+    def check_webhook_subscription(self, client_id, client_secret):
+        path = 'push_subscriptions/'
+
+        params = {'client_id': client_id, 'client_secret': client_secret}
+        return self._dispatcher('get', path, is_webhook=True, **params)
+
+    def delete_webhook_subscription(self, subscription_id, client_id, client_secret):
+        path = 'push_subscriptions/'
+
+        params = {'id': subscription_id, 'client_id': client_id, 'client_secret': client_secret}
+        return self._dispatcher('delete', path, is_webhook=True, **params)
 
     def exchange_token(self, client_id, client_secret, code):
         """
