@@ -3,7 +3,7 @@ class ImproperlyConfigured(Exception):
 
 
 class StravaError(Exception):
-    default_message = 'Unkown Error.'
+    default_message = 'Unknown Error.'
 
     def __init__(self, message=None, response=None, *args, **kwargs):
         self.message = message or self.default_message
