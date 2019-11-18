@@ -27,3 +27,6 @@ SCOPE = Enum(
     ACTIVITY_READ_ALL='activity:read_all',
     ACTIVITY_WRITE='activity:write',
 )
+
+
+DEFAULT_VERIFY_TOKEN = "STRAVA"

@@ -21,3 +21,7 @@ class PermissionDenied(StravaError):
 
 class NotFound(StravaError):
     default_message = 'Resource not found.'
+
+
+class InvalidRequest(StravaError):
+    default_message = 'Validation error'
