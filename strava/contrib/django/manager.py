@@ -108,7 +108,7 @@ class StravaManager:
 
         if lkp:
             try:
-                self._auth_instance = self.get_auth_model().get(**lkp)
+                self._auth_instance = self.get_auth_model().objects.get(**lkp)
             except self.get_auth_model().DoesNotExist:
                 return
         return self._auth_instance
