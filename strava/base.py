@@ -94,7 +94,7 @@ class RequestHandler:
 
     def _get_authorization_header(self):
         if getattr(self, 'access_token', None):
-            return {'authorization': 'Bearer {}'.format(self.access_token}
+            return {'authorization': 'Bearer {}'.format(self.access_token)}
 
     def _before_request(self, context):
         """
