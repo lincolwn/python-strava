@@ -33,7 +33,7 @@ class StravaApiClientV3(RequestHandler):
         approval_prompt = approval_prompt or APPROVAL_PROMPT.AUTO
         assert approval_prompt in APPROVAL_PROMPT, (
             "Invalid value for 'approval_prompt': '{}'".format(approval_prompt),
-            "Valid values are: {}".format(APPROVAL_PROMPT.values())
+            "Valid values are: {}".format([items for items in APPROVAL_PROMPT.values()])
         )
 
         scope = scope or [SCOPE.READ, SCOPE.ACTIVITY_READ_ALL]
