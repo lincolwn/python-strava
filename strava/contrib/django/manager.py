@@ -130,7 +130,7 @@ class StravaManager:
         return self.get_client_class()(access_token=access_token)
 
     def refresh_token(self):
-        auth_data = self.get_client_class().refresh_token(
+        auth_data = self.get_client().refresh_token(
             strava_settings.CLIENT_ID,
             strava_settings.CLIENT_SECRET,
             self.auth_instance.refresh_token
@@ -147,7 +147,7 @@ class StravaManager:
         self.auth_instance.save(update_fields=fields_to_update)
 
     def deauthorize(self):
-        self.get_client_class().deauthorize(self.access_token)
+        self.get_client().deauthorize(self.access_token)
 
     @ensure_auth
     def get_athlete_profile(self):
