@@ -34,8 +34,7 @@ class RequestHandler:
             domain = f'https://{domain}'
 
         domain = domain if domain.endswith('/') else domain + '/'
-        base_url = urljoin(domain, self.api_path.lstrip('/'))
-        base_url = base_url if base_url.endswith('/') else base_url + '/'
+        base_url = urljoin(domain, self.api_path.lstrip('/')).strip('/')
 
         url = urljoin(base_url, path.lstrip('/'))
         return url
@@ -113,7 +112,7 @@ class RequestHandler:
         :param response requests.Response: the response object.
         """
         if hasattr(self, '_after_request_subscribers'):
-            for fn in self._before_request_subscribers:
+            for fn in self._after_request_subscribers:
                 fn(response)
 
     def before_request_hook(self, func):
