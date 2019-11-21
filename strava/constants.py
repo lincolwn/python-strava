@@ -3,7 +3,7 @@ class Enum:
         self.__dict__.update(kwargs)
 
     def __contains__(self, value):
-        return value in self.__dict__
+        return value in self.__dict__.values()
 
     def __iter__(self):
         return iter(self.__dict__.values())
