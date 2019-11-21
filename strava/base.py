@@ -34,10 +34,11 @@ class RequestHandler:
             domain = f'https://{domain}'
 
         domain = domain if domain.endswith('/') else domain + '/'
-        base_url = urljoin(domain, self.api_path.lstrip('/')).strip('/')
+        base_url = urljoin(domain, self.api_path.lstrip('/'))
+        base_url = base_url if base_url.endswith('/') else base_url + '/'
 
         url = urljoin(base_url, path.lstrip('/'))
-        return url
+        return url.strip('/')
 
     def _dispatcher(self, method, path, files=None, body=None, is_webhook=False, **params):
         """

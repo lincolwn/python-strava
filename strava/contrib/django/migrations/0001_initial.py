@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('access_token', models.CharField(max_length=50)),
                 ('refresh_token', models.CharField(max_length=50)),
                 ('athlete_id', models.PositiveIntegerField(db_index=True, unique=True)),
-                ('expires_at', models.DateField(blank=True, null=True)),
+                ('expires_at', models.DateTimeField(blank=True, null=True)),
                 ('scope', models.CharField(blank=True, max_length=150, null=True)),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='strava_auth', to=settings.AUTH_USER_MODEL)),
             ],
