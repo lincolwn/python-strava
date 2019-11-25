@@ -8,8 +8,8 @@ from django.core.exceptions import ValidationError
 from strava.client import StravaApiClientV3
 from strava.helpers import from_epoch_to_datetime
 from strava.exceptions import Unauthenticated
-from strava.contrib.django.models import StravaAuth
-from strava.contrib.django.settings import strava_settings
+from strava.contrib.strava_django.models import StravaAuth
+from strava.contrib.strava_django.settings import strava_settings
 
 
 logger = logging.getLogger(__name__)
