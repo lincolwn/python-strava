@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 
 
 class StravaAuth(models.Model):
-    access_token = models.CharField(max_length=50)
-    refresh_token = models.CharField(max_length=50)
+    access_token = models.CharField(max_length=50, null=True, blank=True)
+    refresh_token = models.CharField(max_length=50, null=True, blank=True)
     athlete_id = models.PositiveIntegerField(db_index=True, unique=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     scope = models.CharField(max_length=150, null=True, blank=True)

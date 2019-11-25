@@ -51,7 +51,6 @@ class StravaManager:
         auth_model.objects.get_or_create(
             athlete_id=strava_settings.DEFAULT_ATHLETE_ID,
             defaults=dict(
-                access_token=strava_settings.DEFAULT_ACCESS_TOKEN,
                 refresh_token=strava_settings.DEFAULT_REFRESH_TOKEN,
             )
         )
