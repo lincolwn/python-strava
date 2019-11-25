@@ -18,8 +18,8 @@ class Migration(migrations.Migration):
             name='StravaAuth',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('access_token', models.CharField(max_length=50)),
-                ('refresh_token', models.CharField(max_length=50)),
+                ('access_token', models.CharField(max_length=50, null=True, blank=True)),
+                ('refresh_token', models.CharField(max_length=50, null=True, blank=True)),
                 ('athlete_id', models.PositiveIntegerField(db_index=True, unique=True)),
                 ('expires_at', models.DateTimeField(blank=True, null=True)),
                 ('scope', models.CharField(blank=True, max_length=150, null=True)),
