@@ -215,9 +215,8 @@ class StravaApiClientV3(RequestHandler):
 
         path = 'segments/explore/'
 
-        assert len(bounds) == 2, "Invalid bounds. Must be '[[lat, long], [lat, long]]'"
-        _bounds = (bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1])
-        params = {'bounds': ','.join(_bounds)}
+        assert len(bounds) == 4, "Invalid bounds. Must be '[southwest_corner_latitude, southwest_corner_longitude, northeast_corner_latitude, northeast_corner_longitude]'"
+        params = {'bounds': ','.join(str(bound) for bound in bounds)}
         if activity_type:
             assert activity_type in ('running', 'riding'), "Invalid 'activity_type'. Must be 'running' or 'riding'"
             params['activity_type'] = activity_type
