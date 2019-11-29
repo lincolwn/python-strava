@@ -77,12 +77,12 @@ class StravaManager:
 
         auth_data["expires_at"] = from_epoch_to_datetime(auth_data["expires_at"])
         athlete = auth_data.pop("athlete")
-        auth_data["athete_id"] = athlete["id"]
+        auth_data["athlete_id"] = athlete["id"]
         auth_data["scope"] = scope
 
         auth_model = cls().get_auth_model()
         try:
-            auth_instance = auth_model.objects.get(athelte_id=auth_data["athlete_id"])
+            auth_instance = auth_model.objects.get(athlete_id=auth_data["athlete_id"])
         except auth_model.DoesNotExist:
             auth_instance = auth_model.objects.create(**auth_data)
         else:
