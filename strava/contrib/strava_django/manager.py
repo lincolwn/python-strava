@@ -74,17 +74,19 @@ class StravaManager:
             client_secret=strava_settings.CLIENT_SECRET,
             code=code
         )
-
         auth_data["expires_at"] = from_epoch_to_datetime(auth_data["expires_at"])
-        athlete = auth_data.pop("athlete")
-        auth_data["athlete_id"] = athlete["id"]
         auth_data["scope"] = scope
-
         auth_model = cls().get_auth_model()
         try:
-            auth_instance = auth_model.objects.get(athlete_id=auth_data["athlete_id"])
+            auth_instance = auth_model.objects.get(athlete_id=auth_data["athlete"]["id"])
         except auth_model.DoesNotExist:
-            auth_instance = auth_model.objects.create(**auth_data)
+            auth_instance = auth_model.objects.create(
+                access_token=auth_data["access_token"],
+                refresh_token=auth_data["refresh_token"],
+                athlete_id=auth_data["athlete"]["id"],
+                expires_at=auth_data["expires_at"],
+                scope=auth_data["scope"],
+            )
         else:
             fields_to_update = []
             for field, value in auth_data.items():
