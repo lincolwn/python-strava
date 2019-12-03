@@ -50,9 +50,7 @@ class StravaManager:
         auth_model = cls().get_auth_model()
         auth_model.objects.get_or_create(
             athlete_id=strava_settings.DEFAULT_ATHLETE_ID,
-            defaults=dict(
-                refresh_token=strava_settings.DEFAULT_REFRESH_TOKEN,
-            )
+            defaults=dict(refresh_token=strava_settings.DEFAULT_REFRESH_TOKEN,),
         )
         return cls.by_athlete_id(strava_settings.DEFAULT_ATHLETE_ID)
 
@@ -64,7 +62,7 @@ class StravaManager:
             approval_prompt=approval_prompt,
             scope=scope,
             state=state,
-            mobile=mobile
+            mobile=mobile,
         )
 
     @classmethod
@@ -74,22 +72,19 @@ class StravaManager:
             client_secret=strava_settings.CLIENT_SECRET,
             code=code
         )
+        auth_data["athlete_id"] = auth_data["athlete"]["id"]
         auth_data["expires_at"] = from_epoch_to_datetime(auth_data["expires_at"])
         auth_data["scope"] = scope
+        fields = ["athlete_id", "access_token", "refresh_token", "expires_at", "scope"]
+        new_fields = {field: auth_data[field] for field in fields}
         auth_model = cls().get_auth_model()
         try:
-            auth_instance = auth_model.objects.get(athlete_id=auth_data["athlete"]["id"])
+            auth_instance = auth_model.objects.get(athlete_id=auth_data["athlete_id"])
         except auth_model.DoesNotExist:
-            auth_instance = auth_model.objects.create(
-                access_token=auth_data["access_token"],
-                refresh_token=auth_data["refresh_token"],
-                athlete_id=auth_data["athlete"]["id"],
-                expires_at=auth_data["expires_at"],
-                scope=auth_data["scope"],
-            )
+            auth_instance = auth_model.objects.create(**new_fields)
         else:
             fields_to_update = []
-            for field, value in auth_data.items():
+            for field, value in new_fields.items():
                 if getattr(auth_instance, field) != value:
                     setattr(auth_instance, field, value)
                     fields_to_update.append(field)
