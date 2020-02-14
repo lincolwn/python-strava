@@ -18,7 +18,11 @@ logger = logging.getLogger(__name__)
 def ensure_auth(func):
     def wrapper(strava_manager, *args, **kwargs):
         strava_auth = strava_manager.auth_instance
-        expires_at = strava_auth.expires_at
+        try:
+            expires_at = strava_auth.expires_at
+        except AttributeError:
+            expires_at = None
+
         if expires_at is not None and expires_at.astimezone(pytz.UTC) < timezone.now().astimezone(pytz.UTC):
             strava_manager.refresh_token()
         try:
