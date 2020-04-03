@@ -69,12 +69,14 @@ class StravaApiClientV3(RequestHandler):
 
         scheme = 'https'
         path = oauth_path
-        if mobile and not deep_link:
-            path = mobile_oauth_path
-        elif deep_link:
+
+        if deep_link:
             scheme = 'strava'
             path = f'//{mobile_oauth_path}'
+            return urlunsplit((scheme, '', path, urlencode(qs), ''))
 
+        if mobile and not deep_link:
+            path = mobile_oauth_path
         return urlunsplit((scheme, cls.api_domain, path, urlencode(qs), ''))
 
     def subscribe_webhook(self, client_id, client_secret, callback_url, verify_token=DEFAULT_VERIFY_TOKEN):
