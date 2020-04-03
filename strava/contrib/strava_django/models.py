@@ -10,7 +10,7 @@ class StravaAuth(models.Model):
     athlete_id = models.PositiveIntegerField(db_index=True, unique=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     scope = models.CharField(max_length=150, null=True, blank=True)
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
