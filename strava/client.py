@@ -13,7 +13,16 @@ class StravaApiClientV3(RequestHandler):
         self.access_token = access_token
 
     @classmethod
-    def authorization_url(cls, client_id, redirect_uri, approval_prompt=None, scope=None, state=None, mobile=False):
+    def authorization_url(
+        cls,
+        client_id,
+        redirect_uri,
+        approval_prompt=None,
+        scope=None,
+        state=None,
+        mobile=False,
+        deep_link=False,
+    ):
         """
         Returns the Strava authorization URL.
 
@@ -24,7 +33,8 @@ class StravaApiClientV3(RequestHandler):
         :param approval_prompt [str]: indicates if Strava should show the autorization prompt to the user
         :param scope [Sequence[str]]: list/tuple of the requested scope.
         :params state [str]: A value to be returned in the redirect URI.
-        :param mobile [bool]: Indicates if the user should be redirect to the mobile page or not.
+        :param mobile [bool]: Returns mobile link version.
+        :param deep_link [bool]: Returns ios deep link version.
         """
 
         oauth_path = 'oauth/authorize/'
@@ -57,8 +67,15 @@ class StravaApiClientV3(RequestHandler):
             assert isinstance(state, str), "Invalid value for 'state'. This value must be str."
             qs['state'] = state
 
-        path = mobile_oauth_path if mobile else oauth_path
-        return urlunsplit(('https', cls.api_domain, path, urlencode(qs), ''))
+        scheme = 'https'
+        path = oauth_path
+        if mobile and not deep_link:
+            path = mobile_oauth_path
+        elif deep_link:
+            scheme = 'strava'
+            path = f'//{mobile_oauth_path}'
+
+        return urlunsplit((scheme, cls.api_domain, path, urlencode(qs), ''))
 
     def subscribe_webhook(self, client_id, client_secret, callback_url, verify_token=DEFAULT_VERIFY_TOKEN):
         path = 'push_subscriptions/'
@@ -215,7 +232,10 @@ class StravaApiClientV3(RequestHandler):
 
         path = 'segments/explore/'
 
-        assert len(bounds) == 4, "Invalid bounds. Must be '[southwest_corner_latitude, southwest_corner_longitude, northeast_corner_latitude, northeast_corner_longitude]'"
+        assert len(bounds) == 4, (
+            "Invalid bounds. Must be '[southwest_corner_latitude, southwest_corner_longitude, "
+            "northeast_corner_latitude, northeast_corner_longitude]'"
+        )
         params = {'bounds': ','.join(str(bound) for bound in bounds)}
         if activity_type:
             assert activity_type in ('running', 'riding'), "Invalid 'activity_type'. Must be 'running' or 'riding'"
