@@ -55,7 +55,7 @@ class StravaManager:
         return cls.by_athlete_id(strava_settings.DEFAULT_ATHLETE_ID)
 
     @classmethod
-    def authorization_url(cls, approval_prompt=None, scope=None, state=None, mobile=False):
+    def authorization_url(cls, approval_prompt=None, scope=None, state=None, mobile=False, deep_link=False):
         return cls().get_client_class().authorization_url(
             client_id=strava_settings.CLIENT_ID,
             redirect_uri=strava_settings.REDIRECT_URI,
@@ -63,6 +63,7 @@ class StravaManager:
             scope=scope,
             state=state,
             mobile=mobile,
+            deep_link=deep_link,
         )
 
     @classmethod
