@@ -58,7 +58,7 @@ class StravaManager:
     def authorization_url(cls, approval_prompt=None, scope=None, state=None, mobile=False, deep_link=False):
         return cls().get_client_class().authorization_url(
             client_id=strava_settings.CLIENT_ID,
-            redirect_uri=strava_settings.REDIRECT_URI,
+            redirect_uri=strava_settings.DEEP_LINK_REDIRECT_URI if deep_link else strava_settings.REDIRECT_URI,
             approval_prompt=approval_prompt,
             scope=scope,
             state=state,
