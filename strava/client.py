@@ -37,8 +37,8 @@ class StravaApiClientV3(RequestHandler):
         :param deep_link [bool]: Returns ios deep link version.
         """
 
-        oauth_path = 'oauth/authorize/'
-        mobile_oauth_path = 'oauth/mobile/authorize/'
+        oauth_path = 'oauth/authorize'
+        mobile_oauth_path = 'oauth/mobile/authorize'
 
         approval_prompt = approval_prompt or APPROVAL_PROMPT.AUTO
         assert approval_prompt in APPROVAL_PROMPT, (
@@ -80,7 +80,7 @@ class StravaApiClientV3(RequestHandler):
         return urlunsplit((scheme, cls.api_domain, path, urlencode(qs), ''))
 
     def subscribe_webhook(self, client_id, client_secret, callback_url, verify_token=DEFAULT_VERIFY_TOKEN):
-        path = 'push_subscriptions/'
+        path = 'push_subscriptions'
 
         params = {
             'client_id': client_id,
@@ -98,13 +98,13 @@ class StravaApiClientV3(RequestHandler):
         return {"hub.challenge": hub_challenge}
 
     def check_webhook_subscription(self, client_id, client_secret):
-        path = 'push_subscriptions/'
+        path = 'push_subscriptions'
 
         params = {'client_id': client_id, 'client_secret': client_secret}
         return self._dispatcher('get', path, is_webhook=True, **params)
 
     def delete_webhook_subscription(self, subscription_id, client_id, client_secret):
-        path = 'push_subscriptions/'
+        path = 'push_subscriptions'
 
         params = {'id': subscription_id, 'client_id': client_id, 'client_secret': client_secret}
         return self._dispatcher('delete', path, is_webhook=True, **params)
@@ -120,7 +120,7 @@ class StravaApiClientV3(RequestHandler):
         :param code [str]: Temporary authorization code received by Strava.
         """
 
-        path = 'oauth/token/'
+        path = 'oauth/token'
 
         params = {
             'client_id': client_id,
@@ -144,7 +144,7 @@ class StravaApiClientV3(RequestHandler):
         :param refresh_token [str]: Refresh token received by Strava.
         """
 
-        path = 'oauth/token/'
+        path = 'oauth/token'
 
         params = {
             'client_id': client_id,
@@ -164,7 +164,7 @@ class StravaApiClientV3(RequestHandler):
         See docs: https://developers.strava.com/docs/authentication/
         """
 
-        path = 'oauth/deauthorize/'
+        path = 'oauth/deauthorize'
         self._dispatcher('post', path, access_token=access_token)
 
     def get_athlete_profile(self):
@@ -174,7 +174,7 @@ class StravaApiClientV3(RequestHandler):
         See docs: http://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthlete
         """
 
-        path = 'athlete/'
+        path = 'athlete'
         return self._dispatcher('get', path)
 
     def get_activities(self, before=None, after=None, per_page=50, limit=None):
@@ -191,7 +191,7 @@ class StravaApiClientV3(RequestHandler):
         Note: 'before' and 'after' will be considered in UTC.
         """
 
-        path = 'athlete/activities/'
+        path = 'athlete/activities'
 
         params = {}
         if before:
@@ -212,7 +212,7 @@ class StravaApiClientV3(RequestHandler):
         :param include_all_efforts [bool]: include segment efforts in the response
         """
 
-        path = f'activities/{activity_id}/'
+        path = f'activities/{activity_id}'
         return self._dispatcher('get', path, include_all_efforts=include_all_efforts)
 
     def explore_segments(self, bounds, activity_type=None, min_cat=None, max_cat=None):
@@ -232,7 +232,7 @@ class StravaApiClientV3(RequestHandler):
 
         """
 
-        path = 'segments/explore/'
+        path = 'segments/explore'
 
         assert len(bounds) == 4, (
             "Invalid bounds. Must be '[southwest_corner_latitude, southwest_corner_longitude, "
@@ -258,7 +258,7 @@ class StravaApiClientV3(RequestHandler):
         :param segment_id [int]: Segment id.
         """
 
-        path = f'segments/{segment_id}/'
+        path = f'segments/{segment_id}'
         return self._dispatcher('get', path)
 
     def get_segment_efforts(self, segment_id, per_page=50, limit=None):
@@ -272,7 +272,7 @@ class StravaApiClientV3(RequestHandler):
         :param limit [int]: maximum number of activities to fetch.
         """
 
-        path = f'segments/{segment_id}/all_efforts/'
+        path = f'segments/{segment_id}/all_efforts'
         fetcher = partial(self._dispatcher, 'get', path)
         return BatchIterator(fetcher, per_page=per_page, limit=limit)
 
@@ -285,5 +285,5 @@ class StravaApiClientV3(RequestHandler):
         :param effort_id [id]: segment effort id
         """
 
-        path = f'segment_efforts/{effort_id}/'
+        path = f'segment_efforts/{effort_id}'
         return self._dispatcher('get', path)
