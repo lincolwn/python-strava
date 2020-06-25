@@ -88,7 +88,7 @@ class StravaApiClientV3(RequestHandler):
             'callback_url': callback_url,
             'verify_token': verify_token
         }
-        return self._dispatcher('post', path, is_webhook=True, **params)
+        return self._dispatcher('post', path, **params)
 
     def validate_webhook_subscription(self, hub_mode, hub_challenge, verify_token=None):
         assert hub_mode == 'subscribe', "Invalid 'hub_mode'."
@@ -101,13 +101,13 @@ class StravaApiClientV3(RequestHandler):
         path = 'push_subscriptions'
 
         params = {'client_id': client_id, 'client_secret': client_secret}
-        return self._dispatcher('get', path, is_webhook=True, **params)
+        return self._dispatcher('get', path, **params)
 
     def delete_webhook_subscription(self, subscription_id, client_id, client_secret):
         path = 'push_subscriptions'
 
         params = {'id': subscription_id, 'client_id': client_id, 'client_secret': client_secret}
-        return self._dispatcher('delete', path, is_webhook=True, **params)
+        return self._dispatcher('delete', path, **params)
 
     def exchange_token(self, client_id, client_secret, code):
         """
