@@ -104,10 +104,10 @@ class StravaApiClientV3(RequestHandler):
         return self._dispatcher('get', path, **params)
 
     def delete_webhook_subscription(self, subscription_id, client_id, client_secret):
-        path = 'push_subscriptions'
+        path = 'push_subscriptions/{id}'
 
-        params = {'id': subscription_id, 'client_id': client_id, 'client_secret': client_secret}
-        return self._dispatcher('delete', path, **params)
+        params = {'client_id': client_id, 'client_secret': client_secret}
+        return self._dispatcher('delete', path.format(id=subscription_id), **params)
 
     def exchange_token(self, client_id, client_secret, code):
         """
