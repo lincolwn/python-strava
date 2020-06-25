@@ -21,15 +21,14 @@ logger = logging.getLogger('strava.client')
 class RequestHandler:
 
     api_domain: str = 'www.strava.com'
-    webhook_domain: str = 'api.strava.com'
     api_path: str = None
     access_token: str = None
 
-    def _build_url(self, path, is_webhook=False):
+    def _build_url(self, path):
         if not self.api_path:
             raise ImproperlyConfigured("Missing the 'api_path' setting for the Strava Client.")
 
-        domain = self.api_domain if not is_webhook else self.webhook_domain
+        domain = self.api_domain
         if not domain.startswith('http'):
             domain = f'https://{domain}'
 
@@ -40,11 +39,11 @@ class RequestHandler:
         url = urljoin(base_url, path.lstrip('/'))
         return url.strip('/')
 
-    def _dispatcher(self, method, path, files=None, body=None, is_webhook=False, **params):
+    def _dispatcher(self, method, path, files=None, body=None, **params):
         """
-        :param path [str]: URL path on the Strava API.
-
         :param method [str]: HTTP method.
+
+        :param path [str]: URL path on the Strava API.
 
         :param params [Dict[str, Any]]: Dict of params to be passed as querystring on the request.
 
@@ -52,13 +51,12 @@ class RequestHandler:
 
         :param body [Dict[str, Any]]: request body.
         """
-        url = self._build_url(path, is_webhook)
+        url = self._build_url(path)
         context = {
             'http_method': method.upper(),
             'url': url,
             'params': params,
             'body': body,
-            'is_webhook': is_webhook
         }
 
         self._before_request(context)
@@ -126,7 +124,6 @@ class RequestHandler:
             - url,
             - params,
             - body (request body),
-            - is_webhook
 
         :param func [Callable]: callable to be called before make the request
         """
