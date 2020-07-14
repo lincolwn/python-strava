@@ -261,19 +261,32 @@ class StravaApiClientV3(RequestHandler):
         path = f'segments/{segment_id}'
         return self._dispatcher('get', path)
 
-    def get_segment_efforts(self, segment_id, per_page=50, limit=None):
+    def get_segment_efforts(self, segment_id, per_page=50, limit=None, start_dt=None, end_dt=None):
         """
         Return all segment's efforts from activities of the authenticated user.
 
         See docs: http://developers.strava.com/docs/reference/#api-SegmentEfforts-getEffortsBySegmentId
 
         :param segment_id [int]: Segment id.
+        :param start_dt [DateTime]: Segment start date time.
+        :param end_dt [DateTime]: Segment end date time.
         :param per_page [int]: page size.
         :param limit [int]: maximum number of activities to fetch.
         """
 
-        path = f'segments/{segment_id}/all_efforts'
-        fetcher = partial(self._dispatcher, 'get', path)
+        path = 'segment_efforts'
+
+        assert segment_id is not None, 'segment_id is required'
+
+        kwargs = dict(segment_id=segment_id)
+
+        if start_dt:
+            kwargs['start_date_local'] = start_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+        if end_dt:
+            kwargs['end_date_local'] = end_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        fetcher = partial(self._dispatcher, 'get', path, **kwargs)
+
         return BatchIterator(fetcher, per_page=per_page, limit=limit)
 
     def get_segment_effort(self, effort_id):
