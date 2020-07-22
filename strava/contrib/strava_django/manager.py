@@ -146,6 +146,7 @@ class StravaManager:
     @ensure_auth
     def deauthorize(self):
         self.get_client().deauthorize(self.auth_instance.access_token)
+        self.auth_instance.delete()
 
     @ensure_auth
     def get_athlete_profile(self):
