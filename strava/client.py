@@ -2,7 +2,13 @@ from functools import partial
 from urllib.parse import urlunsplit, urlencode
 
 from strava.base import RequestHandler
-from strava.constants import APPROVAL_PROMPT, SCOPE, DEFAULT_VERIFY_TOKEN
+from strava.constants import (
+    SCOPE,
+    APPROVAL_PROMPT,
+    DEFAULT_VERIFY_TOKEN,
+    STRAVA_DATETIME_FORMAT,
+
+)
 from strava.helpers import BatchIterator, from_datetime_to_epoch
 
 
@@ -10,6 +16,7 @@ class StravaApiClientV3(RequestHandler):
     api_path = 'api/v3/'
 
     def __init__(self, access_token=None):
+        super().__init__()
         self.access_token = access_token
 
     @classmethod
@@ -261,7 +268,7 @@ class StravaApiClientV3(RequestHandler):
         path = f'segments/{segment_id}'
         return self._dispatcher('get', path)
 
-    def get_segment_efforts(self, segment_id, per_page=50, limit=None, start_dt=None, end_dt=None):
+    def get_segment_efforts(self, segment_id, per_page=50, start_dt=None, end_dt=None):
         """
         Return all segment's efforts from activities of the authenticated user.
 
@@ -278,16 +285,14 @@ class StravaApiClientV3(RequestHandler):
 
         assert segment_id is not None, 'segment_id is required'
 
-        kwargs = dict(segment_id=segment_id)
+        kwargs = dict(segment_id=segment_id, per_page=per_page)
 
         if start_dt:
-            kwargs['start_date_local'] = start_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+            kwargs['start_date_local'] = start_dt.strftime(STRAVA_DATETIME_FORMAT)
         if end_dt:
-            kwargs['end_date_local'] = end_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+            kwargs['end_date_local'] = end_dt.strftime(STRAVA_DATETIME_FORMAT)
 
-        fetcher = partial(self._dispatcher, 'get', path, **kwargs)
-
-        return BatchIterator(fetcher, per_page=per_page, limit=limit)
+        return self._dispatcher('get', path, **kwargs)
 
     def get_segment_effort(self, effort_id):
         """

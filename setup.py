@@ -9,7 +9,7 @@ except IOError:
 
 setup(
     name='python-strava',
-    version='0.1.7',
+    version='0.1.8',
     description=('Strava API client supporting high level integration with Django.'),
     author='Lincolwn Martins',
     author_email='lincolwn@gmail.com',
