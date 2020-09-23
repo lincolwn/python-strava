@@ -12,6 +12,7 @@ from strava.exceptions import (
     PermissionDenied,
     NotFound,
     InvalidRequest,
+    RequestLimitExceeded,
 )
 
 
@@ -23,6 +24,17 @@ class RequestHandler:
     api_domain: str = 'www.strava.com'
     api_path: str = None
     access_token: str = None
+
+    error_mapping = {
+        HTTPStatus.BAD_REQUEST: InvalidRequest,
+        HTTPStatus.UNAUTHORIZED: Unauthenticated,
+        HTTPStatus.FORBIDDEN: PermissionDenied,
+        HTTPStatus.NOT_FOUND: NotFound,
+        HTTPStatus.PAYMENT_REQUIRED: RequestLimitExceeded,
+    }
+
+    def __init__(self):
+        self.last_response = None
 
     def _build_url(self, path):
         if not self.api_path:
@@ -83,12 +95,8 @@ class RequestHandler:
         )
 
         self.handle_response(response)
-
-        try:
-            response_data = response.json()
-        except json.JSONDecodeError:
-            response_data = None
-        return response_data
+        self.last_response = response
+        return response.json()
 
     def _get_authorization_header(self):
         if getattr(self, 'access_token', None):
@@ -150,18 +158,9 @@ class RequestHandler:
             self._after_request_subscribers.append(func)
 
     def handle_response(self, response):
-        exc_class = None
-        if response.status_code == HTTPStatus.BAD_REQUEST:
-            exc_class = InvalidRequest
-        if response.status_code == HTTPStatus.UNAUTHORIZED:
-            exc_class = Unauthenticated
-        elif response.status_code == HTTPStatus.FORBIDDEN:
-            exc_class = PermissionDenied
-        elif response.status_code == HTTPStatus.NOT_FOUND:
-            exc_class = NotFound
-        elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-            exc_class = StravaError
-
-        if exc_class:
-            raise exc_class(response=response)
+        try:
+            response.raise_for_status()
+        except requests.HTTPError:
+            exp_cls = self.error_mapping.get(response.status_code, StravaError)
+            raise exp_cls(response=response)
         return response
