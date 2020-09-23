@@ -275,10 +275,9 @@ class StravaApiClientV3(RequestHandler):
         See docs: http://developers.strava.com/docs/reference/#api-SegmentEfforts-getEffortsBySegmentId
 
         :param segment_id [int]: Segment id.
+        :param per_page [int]: page size.
         :param start_dt [DateTime]: Segment start date time.
         :param end_dt [DateTime]: Segment end date time.
-        :param per_page [int]: page size.
-        :param limit [int]: maximum number of activities to fetch.
         """
 
         path = 'segment_efforts'

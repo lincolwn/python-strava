@@ -169,8 +169,8 @@ class StravaManager:
         return self.get_client().get_segment(segment_id)
 
     @ensure_auth
-    def get_segment_efforts(self, segment_id, per_page=50, limit=None, start_dt=None, end_dt=None):
-        return self.get_client().get_segment_efforts(segment_id, per_page, limit, start_dt, end_dt)
+    def get_segment_efforts(self, segment_id, per_page=50, start_dt=None, end_dt=None):
+        return self.get_client().get_segment_efforts(segment_id, per_page, start_dt, end_dt)
 
     @ensure_auth
     def get_segment_effort(self, effort_id):
