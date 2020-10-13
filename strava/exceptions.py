@@ -24,8 +24,12 @@ class NotFound(StravaError):
 
 
 class InvalidRequest(StravaError):
-    default_message = 'Validation error'
+    default_message = 'Validation error.'
 
 
 class RequestLimitExceeded(StravaError):
-    default_message = 'Limit of requests for the period was exceeded'
+    default_message = 'Limit of requests for the period was exceeded.'
+
+
+class PremiumAccountRequired(StravaError):
+    default_message = 'Premium account required for this operation.'
