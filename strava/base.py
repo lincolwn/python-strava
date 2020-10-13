@@ -1,10 +1,10 @@
-import json
 import logging
 from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
 
+from strava import constants
 from strava.exceptions import (
     ImproperlyConfigured,
     StravaError,
@@ -13,6 +13,7 @@ from strava.exceptions import (
     NotFound,
     InvalidRequest,
     RequestLimitExceeded,
+    PremiumAccountRequired,
 )
 
 
@@ -30,11 +31,16 @@ class RequestHandler:
         HTTPStatus.UNAUTHORIZED: Unauthenticated,
         HTTPStatus.FORBIDDEN: PermissionDenied,
         HTTPStatus.NOT_FOUND: NotFound,
-        HTTPStatus.PAYMENT_REQUIRED: RequestLimitExceeded,
+        HTTPStatus.PAYMENT_REQUIRED: PremiumAccountRequired,
+        HTTPStatus.TOO_MANY_REQUESTS: RequestLimitExceeded,
     }
 
     def __init__(self):
         self.last_response = None
+        self.fifteen_minute_rate = None
+        self.fifteen_minute_rate_usage = None
+        self.daily_rate = None
+        self.daily_rate_usage = None
 
     def _build_url(self, path):
         if not self.api_path:
@@ -102,6 +108,28 @@ class RequestHandler:
         if getattr(self, 'access_token', None):
             return {'authorization': 'Bearer {}'.format(self.access_token)}
 
+    def _get_strava_limits(self, response):
+        limits = response.headers.get(constants.RATE_LIMIT_HEADER)
+        try:
+            fifteen_minute_rate, daily_rate = limits.split(',')
+            fifteen_minute_rate, daily_rate = int(fifteen_minute_rate), int(daily_rate)
+        except Exception:
+            logger.debug(f'invalid Strava rate limits header. Header {constants.RATE_LIMIT_HEADER} {limits}')
+            fifteen_minute_rate, daily_rate = None, None
+
+        usage = response.headers.get(constants.RATE_LIMIT_USAGE_HEADER)
+        try:
+            fifteen_minute_rate_usage, daily_rate_usage = usage.split(',')
+            fifteen_minute_rate_usage, daily_rate_usage = int(fifteen_minute_rate_usage), int(daily_rate_usage)
+        except Exception:
+            logger.debug(f'invalid Strava rate limit usage header. Header {constants.RATE_LIMIT_USAGE_HEADER} {usage}')
+            fifteen_minute_rate_usage, daily_rate_usage = None, None
+
+        self.fifteen_minute_rate = fifteen_minute_rate
+        self.fifteen_minute_rate_usage = fifteen_minute_rate_usage
+        self.daily_rate = daily_rate
+        self.daily_rate_usage = daily_rate_usage
+
     def _before_request(self, context):
         """
         Hook called before the request to be made
@@ -157,7 +185,25 @@ class RequestHandler:
         else:
             self._after_request_subscribers.append(func)
 
+    @property
+    def exceeded_fifteen_minutes_budget(self):
+        """
+        Indicates if the 15-minute requests budget was exceeded
+        """
+        if self.fifteen_minute_rate is not None and self.fifteen_minute_rate_usage is not None:
+            return self.fifteen_minute_rate_usage >= self.fifteen_minute_rate
+
+    @property
+    def exceeded_daily_budget(self):
+        """
+        Indicates if the daily requests budget was exceeded
+        """
+        if self.daily_rate is not None and self.daily_rate_usage is not None:
+            return self.daily_rate_usage >= self.daily_rate
+
     def handle_response(self, response):
+        self._get_strava_limits(response)
+
         try:
             response.raise_for_status()
         except requests.HTTPError:
