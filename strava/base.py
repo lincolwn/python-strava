@@ -102,7 +102,19 @@ class RequestHandler:
 
         self.handle_response(response)
         self.last_response = response
-        return response.json()
+
+        return self._add_limit_on_request(response)
+
+    def _add_limit_on_request(self, response):
+        json_response = response.json()
+
+        json_response['limits'] = dict(
+            fifteen_minute_rate=self.fifteen_minute_rate,
+            fifteen_minute_rate_usage=self.fifteen_minute_rate_usage,
+            daily_rate=self.daily_rate,
+            daily_rate_usage=self.daily_rate_usage
+        )
+        return json_response
 
     def _get_authorization_header(self):
         if getattr(self, 'access_token', None):
