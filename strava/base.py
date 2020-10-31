@@ -208,5 +208,13 @@ class RequestHandler:
             response.raise_for_status()
         except requests.HTTPError:
             exp_cls = self.error_mapping.get(response.status_code, StravaError)
-            raise exp_cls(response=response)
+
+            params = {'response': response}
+            if exp_cls is RequestLimitExceeded:
+                if self.fifteen_minute_rate_usage >= self.fifteen_minute_rate:
+                    params['exceeded_period'] = constants.RATE_LIMITS.MINUTES_LIMIT
+                else:
+                    params['exceeded_period'] = constants.RATE_LIMITS.DAILY_LIMIT
+
+            raise exp_cls(**params)
         return response

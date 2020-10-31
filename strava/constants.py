@@ -36,3 +36,9 @@ STRAVA_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 RATE_LIMIT_HEADER = 'X-RateLimit-Limit'
 
 RATE_LIMIT_USAGE_HEADER = 'X-RateLimit-Usage'
+
+
+RATE_LIMITS = Enum(
+    MINUTES_15='MINUTES_15',
+    DAILY='DAILY'
+)

@@ -30,6 +30,10 @@ class InvalidRequest(StravaError):
 class RequestLimitExceeded(StravaError):
     default_message = 'Limit of requests for the period was exceeded.'
 
+    def __init__(self, message=None, response=None, exceeded_period=None, *args, **kwargs):
+        self.exceeded_period = exceeded_period
+        super().__init__(message, response, exceeded_period, *args, **kwargs)
+
 
 class PremiumAccountRequired(StravaError):
     default_message = 'Premium account required for this operation.'
