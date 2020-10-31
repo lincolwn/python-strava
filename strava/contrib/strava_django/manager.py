@@ -68,7 +68,7 @@ class StravaManager:
 
     @classmethod
     def exchange_token(cls, code, scope):
-        auth_data = cls().get_client().exchange_token(
+        auth_data = cls().client.exchange_token(
             client_id=strava_settings.CLIENT_ID,
             client_secret=strava_settings.CLIENT_SECRET,
             code=code
@@ -110,6 +110,32 @@ class StravaManager:
                 return
         return self._auth_instance
 
+    @property
+    def client(self):
+        '''returns Strava's client instance'''
+        if getattr(self, '_client', None):
+            return self._client
+
+        access_token = getattr(self.auth_instance, 'access_token', None)
+        self._client = self.get_client_class()(access_token=access_token)
+        return self._client
+
+    @property
+    def fifteen_minute_rate(self):
+        return self.client.fifteen_minute_rate
+
+    @property
+    def fifteen_minute_rate_usage(self):
+        return self.client.fifteen_minute_rate_usage
+
+    @property
+    def daily_rate(self):
+        return self.client.daily_rate
+
+    @property
+    def daily_rate_usage(self):
+        return self.client.daily_rate_usage
+
     def bind_user(self, user):
         self.auth_instance.bind_user(user)
         self.user = user
@@ -127,7 +153,7 @@ class StravaManager:
         return self.get_client_class()(access_token=access_token)
 
     def refresh_token(self):
-        auth_data = self.get_client().refresh_token(
+        auth_data = self.client.refresh_token(
             strava_settings.CLIENT_ID,
             strava_settings.CLIENT_SECRET,
             self.auth_instance.refresh_token
@@ -145,39 +171,39 @@ class StravaManager:
 
     @ensure_auth
     def deauthorize(self):
-        self.get_client().deauthorize(self.auth_instance.access_token)
+        self.client.deauthorize(self.auth_instance.access_token)
         self.auth_instance.delete()
 
     @ensure_auth
     def get_athlete_profile(self):
-        return self.get_client().get_athlete_profile()
+        return self.client.get_athlete_profile()
 
     @ensure_auth
     def get_activities(self, before=None, after=None, per_page=50, limit=None):
-        return self.get_client().get_activities(before, after, per_page, limit)
+        return self.client.get_activities(before, after, per_page, limit)
 
     @ensure_auth
     def get_activity(self, activity_id, include_all_efforts=True):
-        return self.get_client().get_activity(activity_id, include_all_efforts)
+        return self.client.get_activity(activity_id, include_all_efforts)
 
     @ensure_auth
     def explore_segments(self, bounds, activity_type=None, min_cat=None, max_cat=None):
-        return self.get_client().explore_segments(bounds, activity_type, min_cat, max_cat)
+        return self.client.explore_segments(bounds, activity_type, min_cat, max_cat)
 
     @ensure_auth
     def get_segment(self, segment_id):
-        return self.get_client().get_segment(segment_id)
+        return self.client.get_segment(segment_id)
 
     @ensure_auth
     def get_segment_efforts(self, segment_id, per_page=50, start_dt=None, end_dt=None):
-        return self.get_client().get_segment_efforts(segment_id, per_page, start_dt, end_dt)
+        return self.client.get_segment_efforts(segment_id, per_page, start_dt, end_dt)
 
     @ensure_auth
     def get_segment_effort(self, effort_id):
-        return self.get_client().get_segment_effort(effort_id)
+        return self.client.get_segment_effort(effort_id)
 
     def subscribe_webhook(self):
-        return self.get_client().subscribe_webhook(
+        return self.client.subscribe_webhook(
             client_id=strava_settings.CLIENT_ID,
             client_secret=strava_settings.CLIENT_SECRET,
             callback_url=strava_settings.WEBHOOK_CALLBACK_URL,
@@ -187,13 +213,13 @@ class StravaManager:
     def validate_webhook_subscription(self, hub_mode, hub_challenge, verify_token):
         if verify_token != strava_settings.WEBHOOK_VERIFY_TOKEN:
             raise ValidationError({"verify_token": f"Invalid verify_token parameter: '{verify_token}'"})
-        return self.get_client().validate_webhook_subscription(hub_mode, hub_challenge)
+        return self.client.validate_webhook_subscription(hub_mode, hub_challenge)
 
     def check_webhook_subscription(self):
-        return self.get_client().check_webhook_subscription(strava_settings.CLIENT_ID, strava_settings.CLIENT_SECRET)
+        return self.client.check_webhook_subscription(strava_settings.CLIENT_ID, strava_settings.CLIENT_SECRET)
 
     def delete_webhook_subscription(self, subscription_id):
-        return self.get_client().delete_webhook_subscription(
+        return self.client.delete_webhook_subscription(
             subscription_id=subscription_id,
             client_id=strava_settings.CLIENT_ID,
             client_secret=strava_settings.CLIENT_SECRET,
