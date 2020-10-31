@@ -184,6 +184,26 @@ class StravaApiClientV3(RequestHandler):
         path = 'athlete'
         return self._dispatcher('get', path)
 
+    def get_athlete_zones(self):
+        """
+        Return the heart zones of the authenticated user (access_token owner).
+
+        See docs: https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthleteZones
+        """
+
+        path = 'athlete/zones'
+        return self._dispatcher('get', path)
+
+    def get_athlete_stats(self, athlete_id):
+        """
+        Return user statictics (access_token owner).
+
+        See docs: https://developers.strava.com/docs/reference/#api-Athletes-getStats
+        """
+
+        path = 'athletes/{id}/stats'
+        return self._dispatcher('get', path.format(id=athlete_id))
+
     def get_activities(self, before=None, after=None, per_page=50, limit=None):
         """
         Get the athele activities
