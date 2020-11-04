@@ -214,7 +214,7 @@ class RequestHandler:
                 if self.fifteen_minute_rate_usage >= self.fifteen_minute_rate:
                     params['exceeded_period'] = constants.RATE_LIMITS.MINUTES_15
                 else:
-                    params['exceeded_period'] = constants.RATE_LIMITS.DAILY_LIMIT
+                    params['exceeded_period'] = constants.RATE_LIMITS.DAILY
 
             raise exp_cls(**params)
         return response
