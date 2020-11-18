@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from strava.client import StravaApiClientV3
 from strava.helpers import from_epoch_to_datetime
-from strava.exceptions import Unauthenticated
+from strava.exceptions import Unauthenticated, StravaCredentialsNotFound
 from strava.contrib.strava_django.models import StravaAuth
 from strava.contrib.strava_django.settings import strava_settings
 
@@ -153,6 +153,12 @@ class StravaManager:
         return self.get_client_class()(access_token=access_token)
 
     def refresh_token(self):
+        if not self.auth_instance:
+            raise StravaCredentialsNotFound(
+                "Unable to refresh Strava token"
+                "Couldn't found any strava credentials for this user into the database"
+            )
+
         auth_data = self.client.refresh_token(
             strava_settings.CLIENT_ID,
             strava_settings.CLIENT_SECRET,
