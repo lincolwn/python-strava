@@ -2,6 +2,10 @@ class ImproperlyConfigured(Exception):
     pass
 
 
+class StravaCredentialsNotFound(Exception):
+    pass
+
+
 class StravaError(Exception):
     default_message = 'Unknown Error.'
 
